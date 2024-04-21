@@ -4,27 +4,32 @@ import database
 import helper_functions as helpers
 
 def plan_day(date):
-    start_time = helpers.get_valid_time("С какого времени вы начинаете задания? (HH:MM) ")
-    end_time = helpers.get_valid_time("Во сколько вы закончите план? (HH:MM) ")
+    conn = database.create_connection("tasks.db")  # Создаем соединение с базой данных
+    try:
+        start_time = helpers.get_valid_time("С какого времени вы начинаете задания? (HH:MM) ")
+        end_time = helpers.get_valid_time("Во сколько вы закончите план? (HH:MM) ")
 
-    tasks = []
-    complexities = []
-    end_planning = False
+        tasks = []
+        complexities = []
+        end_planning = False
 
-    while not end_planning:
-        task = input("Введите задачу: ")
-        complexity = helpers.get_valid_complexity("Введите сложность/важность дела (0-10): ")
-        tasks.append(task)
-        complexities.append(complexity)
-        end_planning = helpers.get_yes_no("Хотите вы закончить план? (да/нет): ")
+        while not end_planning:
+            task = input("Введите задачу: ")
+            complexity = helpers.get_valid_complexity("Введите сложность/важность дела (0-10): ")
+            tasks.append(task)
+            complexities.append(complexity)
+            end_planning = helpers.get_yes_no("Хотите вы закончить план? (да/нет): ")
 
-    break_time = int(input("Какие перерывы в минутах? "))
+        break_time = int(input("Какие перерывы в минутах? "))
 
-    planned_tasks = helpers.plan_tasks(tasks, complexities, start_time, end_time, break_time)
+        planned_tasks = helpers.plan_tasks(tasks, complexities, start_time, end_time, break_time)
 
-    helpers.display_schedule(date, planned_tasks)
+        helpers.display_schedule(date, planned_tasks)
 
-    database.insert_day(date, planned_tasks)
+        database.insert_task(conn, date, planned_tasks)  # Передаем объект соединения в функцию вставки
+    finally:
+        if conn:
+            conn.close()  # Закрываем соединение с базой данных
 
 def view_day():
     date = input("Введите дату для просмотра (ГГГГ-ММ-ДД): ")
@@ -37,7 +42,7 @@ def view_day():
 
 def main():
     while True:
-        print("TIme Bot Helper")
+        print("Time Bot Helper")
         print("[1] Планировать день")
         print("[2] Просмотреть план на день")
         print("[3] Просмотреть хранилище дней")
@@ -60,3 +65,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
